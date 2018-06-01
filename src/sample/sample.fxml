@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="500.0" minWidth="1000.0" prefHeight="500.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <left>
+      <ListView prefHeight="500.0" prefWidth="221.0" BorderPane.alignment="CENTER" />
+   </left>
+   <top>
+      <HBox spacing="20.0" BorderPane.alignment="CENTER">
+         <children>
+            <TextField prefHeight="25.0" prefWidth="444.0" promptText="Enter file name or order (sepreate items with ',')" />
+            <RadioButton mnemonicParsing="false" text="Manually Input">
+               <padding>
+                  <Insets top="3.0" />
+               </padding>
+               <toggleGroup>
+                  <ToggleGroup fx:id="inputMethod" />
+               </toggleGroup>
+            </RadioButton>
+            <RadioButton mnemonicParsing="false" text="File" toggleGroup="$inputMethod">
+               <padding>
+                  <Insets top="3.0" />
+               </padding>
+            </RadioButton>
+            <Button mnemonicParsing="false" text="Submit" />
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </HBox>
+   </top>
+</BorderPane>
