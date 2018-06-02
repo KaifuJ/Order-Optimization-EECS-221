@@ -9,30 +9,100 @@
 
 <BorderPane fx:id="borderPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="500.0" minWidth="1000.0" prefHeight="500.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
    <left>
-      <ListView prefHeight="500.0" prefWidth="221.0" BorderPane.alignment="CENTER" />
+      <ListView prefHeight="403.0" prefWidth="248.0" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets top="5.0" />
+         </BorderPane.margin></ListView>
    </left>
    <top>
-      <HBox spacing="20.0" BorderPane.alignment="CENTER">
+      <VBox>
          <children>
-            <TextField prefHeight="25.0" prefWidth="444.0" promptText="Enter file name or order (sepreate items with ',')" />
-            <RadioButton mnemonicParsing="false" text="Manually Input">
+            <HBox spacing="20.0" BorderPane.alignment="CENTER">
+               <children>
+                  <TextField fx:id="text" prefHeight="25.0" prefWidth="682.0" promptText="Enter file name or order (sepreate items with ',')" text="warehouse-orders-v01.csv" />
+                  <RadioButton fx:id="manInput" mnemonicParsing="false" text="Manually Input">
+                     <padding>
+                        <Insets top="3.0" />
+                     </padding>
+                     <toggleGroup>
+                        <ToggleGroup fx:id="inputMethod" />
+                     </toggleGroup>
+                  </RadioButton>
+                  <RadioButton fx:id="byFile" mnemonicParsing="false" selected="true" text="File" toggleGroup="$inputMethod">
+                     <padding>
+                        <Insets top="3.0" />
+                     </padding>
+                  </RadioButton>
+                  <Button fx:id="submit" mnemonicParsing="false" onAction="#submitClicked" text="Submit" />
+               </children>
                <padding>
-                  <Insets top="3.0" />
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </padding>
-               <toggleGroup>
-                  <ToggleGroup fx:id="inputMethod" />
-               </toggleGroup>
-            </RadioButton>
-            <RadioButton mnemonicParsing="false" text="File" toggleGroup="$inputMethod">
+            </HBox>
+            <HBox spacing="10.0">
+               <children>
+                  <Label text="Start: x =">
+                     <padding>
+                        <Insets left="20.0" top="5.0" />
+                     </padding>
+                  </Label>
+                  <TextField fx:id="startX" prefHeight="25.0" prefWidth="42.0" text="1" />
+                  <Label text="Start: y =">
+                     <padding>
+                        <Insets left="20.0" top="6.0" />
+                     </padding>
+                  </Label>
+                  <TextField fx:id="startY" prefWidth="42.0" text="1" />
+                  <Label text="End: x =">
+                     <padding>
+                        <Insets left="20.0" top="6.0" />
+                     </padding>
+                  </Label>
+                  <TextField fx:id="endX" prefWidth="42.0" text="5" />
+                  <Label text="End: y =">
+                     <padding>
+                        <Insets left="20.0" top="6.0" />
+                     </padding>
+                  </Label>
+                  <TextField fx:id="endY" prefWidth="42.0" text="5" />
+               </children>
                <padding>
-                  <Insets top="3.0" />
+                  <Insets left="5.0" right="5.0" />
                </padding>
-            </RadioButton>
-            <Button mnemonicParsing="false" text="Submit" />
+            </HBox>
          </children>
-         <padding>
-            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-         </padding>
-      </HBox>
+      </VBox>
    </top>
+   <bottom>
+      <VBox BorderPane.alignment="CENTER">
+         <children>
+            <Label alignment="TOP_LEFT" text="Optimized order: " />
+            <Label alignment="TOP_LEFT" text="Optimized Path: " />
+            <Label alignment="TOP_LEFT" text="Optimized Distance: " />
+         </children>
+      </VBox>
+   </bottom>
+   <center>
+      <VBox fx:id="centerVBox" BorderPane.alignment="CENTER">
+         <children>
+            <HBox fx:id="centerHBox" prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <VBox fx:id="yCod" spacing="4.0">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                     <padding>
+                        <Insets top="6.0" />
+                     </padding>
+                  </VBox>
+               </children>
+            </HBox>
+            <HBox spacing="4.0" fx:id="xCod">
+               <padding>
+                  <Insets left="38.0" />
+               </padding>
+            </HBox>
+         </children>
+      </VBox>
+   </center>
 </BorderPane>

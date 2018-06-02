@@ -121,7 +121,7 @@ public class TestDrive {
                 }
             }
 
-            wh.orderShortestPath(distances, items, location, weightInfo);
+//            wh.orderShortestPath(distances, items, location, weightInfo);
 
         }
 
@@ -189,7 +189,7 @@ public class TestDrive {
                     }
                 }
 
-                wh.orderShortestPath(distances, order, location, weightInfo);
+//                wh.orderShortestPath(distances, order, location, weightInfo);
                 System.out.println("-------------------------------------");
             }
         } else {

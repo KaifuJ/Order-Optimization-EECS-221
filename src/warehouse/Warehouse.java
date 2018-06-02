@@ -1,5 +1,8 @@
 package warehouse;
 
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+
 import java.util.*;
 
 public class Warehouse {
@@ -107,7 +110,6 @@ public class Warehouse {
             }
         }
         double result = grid[end[0]][end[1]].distance;
-//        this.printPath(start, end);
         this.refreshGrid();
         return result;
     }
@@ -134,7 +136,7 @@ public class Warehouse {
         }
     }
 
-    public double orderShortestPath(double[][] distances, ArrayList<Integer> items, ArrayList<int[]> locations, Map<Integer, Double> weightInfo) {
+    public double orderShortestPath(double[][] distances, ArrayList<Integer> items, ArrayList<int[]> locations, Map<Integer, Double> weightInfo, Rectangle[][] cells) {
         // 0 - start point, 1 - end point
         // distances: [start, end, item1-l, item1-r, item2-l, item2-r ...] * [start, end, item1-l, item1-r, item2-l, item2-r ...]
         // items: item1, item2, item3 ...
@@ -394,6 +396,14 @@ public class Warehouse {
             }
             System.out.println("(" + locations.get(1)[0] + "," + locations.get(1)[1] + ")");
 
+            for (int i = 1; i < finalpath[0].size() - 1; i++) {
+                int current = finalpath[0].get(i);
+                int next = finalpath[0].get(i + 1);
+                this.drawPath(cells, locations.get(current + 1), locations.get(next + 1));
+            }
+            this.drawPath(cells, locations.get(0), locations.get(finalpath[0].get(1) + 1));
+            this.drawPath(cells, locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1), locations.get(1));
+
             System.out.println("\nOptimized Distance:");
             double dis = 0;
             for (int i = 1; i < finalpath[0].size() - 1; i++) {
@@ -646,6 +656,82 @@ public class Warehouse {
 //            return dis;
 
         }
+    }
+
+    public void drawPath(Rectangle[][] cells, int[] k_start, int[] k_end) {
+        int[] start = k_start.clone();
+        int[] end = k_end.clone();
+
+        if (start[0] == -1 || end[0] == -1) {
+            start[0] += 2;
+            end[0] += 2;
+        }
+
+        grid[start[0]][start[1]].distance = 0;
+        Comparator<Node> comparator = new NodeDistanceComparator();
+        int capicity = (this.max_x + 1) * (this.max_y + 1);
+        PriorityQueue<Node> pq = new PriorityQueue<Node>(capicity, comparator);
+        pq.add(grid[start[0]][start[1]]);
+
+        for (int i = 0; i < capicity; i++) {
+            Node current = pq.poll();
+            if (current == null) {
+                return;
+            }
+            if (current.x == end[0] && current.y == end[1]) {
+                break;
+            }
+            if (current.x + 1 <= max_x
+                    && grid[current.x + 1][current.y].pass
+                    && grid[current.x + 1][current.y].distance > current.distance + road_x) {
+                grid[current.x + 1][current.y].distance = current.distance + road_x;
+                grid[current.x + 1][current.y].parent = current;
+                pq.remove(grid[current.x + 1][current.y]);
+                pq.add(grid[current.x + 1][current.y]);
+            }
+            if (current.x - 1 >= 0
+                    && grid[current.x - 1][current.y].pass
+                    && grid[current.x - 1][current.y].distance > current.distance + road_x) {
+                grid[current.x - 1][current.y].distance = current.distance + road_x;
+                grid[current.x - 1][current.y].parent = current;
+                pq.remove(grid[current.x - 1][current.y]);
+                pq.add(grid[current.x - 1][current.y]);
+            }
+            if (current.y + 1 <= max_y
+                    && grid[current.x][current.y + 1].pass
+                    && grid[current.x][current.y + 1].distance > current.distance + road_y) {
+                grid[current.x][current.y + 1].distance = current.distance + road_y;
+                grid[current.x][current.y + 1].parent = current;
+                pq.remove(grid[current.x][current.y + 1]);
+                pq.add(grid[current.x][current.y + 1]);
+            }
+            if (current.y - 1 >= 0
+                    && grid[current.x][current.y - 1].pass
+                    && grid[current.x][current.y - 1].distance > current.distance + road_y) {
+                grid[current.x][current.y - 1].distance = current.distance + road_y;
+                grid[current.x][current.y - 1].parent = current;
+                pq.remove(grid[current.x][current.y - 1]);
+                pq.add(grid[current.x][current.y - 1]);
+            }
+        }
+
+        Node current = grid[end[0]][end[1]];
+        ArrayList<int[]> path = new ArrayList<>();
+        int[] loca = {20 - current.x,  current.y + 1};
+        path.add(loca);
+        while (current.parent != null) {
+            current = current.parent;
+            int[] loca1 = {20 - current.x, current.y + 1};
+            path.add(loca1);
+        }
+
+        for (int[] i : path) {
+            cells[i[0]][i[1]].setFill(Color.YELLOW);
+        }
+        cells[path.get(0)[0]][path.get(0)[1]].setFill(Color.GREEN);
+        cells[path.get(path.size() - 1)[0]][path.get(path.size() - 1)[1]].setFill(Color.GREEN);
+
+        this.refreshGrid();
     }
 }
 
