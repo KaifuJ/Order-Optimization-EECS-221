@@ -55,7 +55,10 @@ public class Controller implements Initializable {
     private VBox yCod;
 
     @FXML
-    private HBox xCod;
+    private HBox xCod1;
+
+    @FXML
+    private HBox xCod2;
 
     @FXML
     private VBox centerVBox;
@@ -92,12 +95,14 @@ public class Controller implements Initializable {
         for (int i = 0; i < 39; i++) {
             String c = null;
             if (i - 1 < 10) {
-                c = " " + Integer.toString(i - 1);
+                c = Integer.toString(i - 1);
+                Label x = new Label(c);
+                this.xCod1.getChildren().add(x);
             } else {
                 c = Integer.toString(i - 1);
+                Label x = new Label(c);
+                this.xCod2.getChildren().add(x);
             }
-            Label x = new Label(c);
-            this.xCod.getChildren().add(x);
         }
 
         for (int i = 0; i < cells.length; i++) { // 21
@@ -232,14 +237,11 @@ public class Controller implements Initializable {
                 }
             }
         }
-
-//        wh.drawPath(this.cells, this.start, this.end);
-
         wh.orderShortestPath(distances, items, location, weightInfo, this.cells);
     }
 
     private void handleByFile(String filename) {
-        System.out.println("file:" + filename);
+
     }
 
     private void refreshColor(){
@@ -255,4 +257,3 @@ public class Controller implements Initializable {
     }
 
 }
-// 108335,391825,340367,286457

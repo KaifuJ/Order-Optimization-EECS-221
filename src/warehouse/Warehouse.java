@@ -524,6 +524,13 @@ public class Warehouse {
             }
             System.out.println("(" + locations.get(order.get(order.size() - 1).num)[0] + "," + locations.get(order.get(order.size() - 1).num)[1] + ")");
 
+            for (int i = 0; i < order.size() - 1; i++) {
+                int current = order.get(i).num;
+                int next = order.get(i + 1).num;
+
+                this.drawPath(cells, locations.get(current), locations.get(next));
+            }
+
             double dis = 0;
             for (int i = 0; i < order.size() - 1; i++) {
                 Tree.Node current = order.get(i);
@@ -717,22 +724,54 @@ public class Warehouse {
 
         Node current = grid[end[0]][end[1]];
         ArrayList<int[]> path = new ArrayList<>();
-        int[] loca = {20 - current.x,  current.y + 1};
+        int[] loca = {20 - current.y,  current.x + 1};
         path.add(loca);
         while (current.parent != null) {
             current = current.parent;
-            int[] loca1 = {20 - current.x, current.y + 1};
+            int[] loca1 = {20 - current.y, current.x + 1};
             path.add(loca1);
         }
 
-        for (int[] i : path) {
-            cells[i[0]][i[1]].setFill(Color.YELLOW);
+        if (k_start[0] == -1 || k_end[0] == -1) {
+            for (int[] i : path) {
+                if (cells[i[0]][i[1] - 2].getFill() == Color.GREEN) {
+
+                } else {
+                    cells[i[0]][i[1] - 2].setFill(Color.YELLOW);
+                }
+            }
+        }else{
+            for (int[] i : path) {
+                if (cells[i[0]][i[1]].getFill() == Color.GREEN) {
+
+                } else {
+                    cells[i[0]][i[1]].setFill(Color.YELLOW);
+                }
+            }
         }
-        cells[path.get(0)[0]][path.get(0)[1]].setFill(Color.GREEN);
-        cells[path.get(path.size() - 1)[0]][path.get(path.size() - 1)[1]].setFill(Color.GREEN);
+
+        if (k_start[0] == -1 || k_end[0] == -1) {
+            cells[path.get(0)[0]][path.get(0)[1] - 2].setFill(Color.GREEN);
+            cells[path.get(path.size() - 1)[0]][path.get(path.size() - 1)[1] - 2].setFill(Color.GREEN);
+        } else {
+            cells[path.get(0)[0]][path.get(0)[1]].setFill(Color.GREEN);
+            cells[path.get(path.size() - 1)[0]][path.get(path.size() - 1)[1]].setFill(Color.GREEN);
+        }
 
         this.refreshGrid();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
