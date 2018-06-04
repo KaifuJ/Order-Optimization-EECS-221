@@ -4,20 +4,19 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
+import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.control.TextField;
 import warehouse.Warehouse;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,45 +25,36 @@ import java.util.ResourceBundle;
 public class Controller implements Initializable {
     @FXML
     private BorderPane borderPane;
-
     @FXML
     private TextField text;
-
     @FXML
     private RadioButton manInput;
-
     @FXML
     private RadioButton byFile;
-
     @FXML
     private Button submit;
-
     @FXML
     private TextField startX;
-
     @FXML
     private TextField startY;
-
     @FXML
     private TextField endX;
-
     @FXML
     private TextField endY;
-
     @FXML
     private VBox yCod;
-
     @FXML
     private HBox xCod1;
-
     @FXML
     private HBox xCod2;
-
     @FXML
     private VBox centerVBox;
-
     @FXML
     private HBox centerHBox;
+    @FXML
+    private TextField weightBound;
+    @FXML
+    private TreeView tree;
 
     private double[][] allInfo;
     private Map<Integer, Double> weightInfo;
@@ -190,7 +180,8 @@ public class Controller implements Initializable {
             this.handleManInput(input);
         } else {
             input = text.getText();
-            this.handleByFile(input);
+            double weightBound = Double.parseDouble(this.weightBound.getText());
+            this.handleByFile(input, weightBound);
         }
     }
 
@@ -237,10 +228,108 @@ public class Controller implements Initializable {
                 }
             }
         }
-        wh.orderShortestPath(distances, items, location, weightInfo, this.cells);
+
+        File f = new File("test.txt");
+        try {
+            f.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Path file = Paths.get("test.txt");
+        wh.orderShortestPath(distances, items, location, weightInfo, this.cells, file);
     }
 
-    private void handleByFile(String filename) {
+    private void handleByFile(String filename, double weightBound) {
+        File inputfile = new File(filename);
+        BufferedReader br1;
+        try{
+            br1 = new BufferedReader(new FileReader(inputfile));
+        }catch(FileNotFoundException e){
+            System.out.println("Can't find the file.");
+            return;
+        }
+
+        ArrayList<ArrayList<Integer>> orders = new ArrayList<>();
+        String line = null;
+        try {
+            while ((line = br1.readLine()) != null) {
+                String[] or = line.split("\t");
+                ArrayList<Integer> order = new ArrayList<>();
+                for (int i = 0; i < or.length; i++) {
+                    order.add(Integer.parseInt(or[i]));
+                }
+                orders.add(order);
+            }
+        } catch (IOException e) {
+            System.out.println("IOException occurs!");
+        }
+
+        this.start[1] = Integer.parseInt(startX.getText());
+        this.start[0] = Integer.parseInt(startY.getText());
+        this.end[1] = Integer.parseInt(endX.getText());
+        this.end[0] = Integer.parseInt(endY.getText());
+
+        ArrayList<ArrayList<Integer>> orderStatus = wh.ordersReorganize(orders, this.weightInfo, weightBound);
+
+        File f = new File("batch.txt");
+        try {
+            f.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Path file = Paths.get("batch.txt");
+
+        for (int i = 0; i < orders.size(); i++) {
+            if (orderStatus.get(i) == null) { // singal order
+                ArrayList<Integer> order = orders.get(i);
+
+                ArrayList<int[]> location = new ArrayList<>();
+                location.add(start);
+                location.add(end);
+
+                for (int ii = 0; ii < order.size(); ii++) {
+                    for (int j = 0; j < 30000; j++) {
+                        if ((int) allInfo[j][0] == order.get(ii)) {
+                            int x = 2 * (int) allInfo[j][1];
+                            int y = 2 * (int) allInfo[j][2];
+
+                            int[] left = {x - 1, y};
+                            int[] right = {x + 1, y};
+                            location.add(left);
+                            location.add(right);
+                        }
+                    }
+                }
+
+                double[][] distances = new double[location.size()][location.size()];
+                for (int ii = 0; ii < location.size(); ii++) {
+                    for (int j = 0; j < location.size(); j++) {
+                        if (ii == j) {
+                            distances[ii][j] = 0;
+                        } else {
+                            distances[ii][j] = wh.shortestPath(location.get(ii), location.get(j));
+                        }
+                    }
+                }
+
+                wh.orderShortestPath(distances, order, location, this.weightInfo, this.cells, file);
+            } else if (orderStatus.get(i).get(0) == -1) { // split
+                ArrayList<Integer> order = orders.get(i);
+                ArrayList<ArrayList<Integer>> subOrders = new ArrayList<>(orderStatus.get(i).size() - 1 + 1);
+                // (size - 1) splitPoints, (size) subOrders
+
+                for (int j = 1; j < orderStatus.get(i).size(); j++) {
+                    int splitPoint = orderStatus.get(i).get(j);
+                    ArrayList<Integer> subOrder = new ArrayList<>();
+                    for (int x = 0; x < splitPoint; x++) {
+                        subOrder.add(order.get(x));
+                    }
+                    subOrders.add(subOrder);
+                } // still lack one subOrder: the subOrder after the last splitPoint
+            }
+
+        }
 
     }
 

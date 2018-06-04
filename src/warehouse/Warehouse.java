@@ -3,6 +3,11 @@ package warehouse;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class Warehouse {
@@ -136,18 +141,22 @@ public class Warehouse {
         }
     }
 
-    public double orderShortestPath(double[][] distances, ArrayList<Integer> items, ArrayList<int[]> locations, Map<Integer, Double> weightInfo, Rectangle[][] cells) {
+    public double orderShortestPath(double[][] distances, ArrayList<Integer> items, ArrayList<int[]> locations, Map<Integer, Double> weightInfo, Rectangle[][] cells, Path file) {
         // 0 - start point, 1 - end point
         // distances: [start, end, item1-l, item1-r, item2-l, item2-r ...] * [start, end, item1-l, item1-r, item2-l, item2-r ...]
         // items: item1, item2, item3 ...
         // locations: start, end, item1-l, item1-r, item2-l, item2-r ...
 
+        ArrayList<String> output = new ArrayList<>();
 
-//        System.out.println("The original order is :");
-//        for (int i = 0; i < items.size(); i++) {
-//            System.out.print(items.get(i) + ",");
-//        }
-//
+        String orOrder = "Original order: ";
+        System.out.println("The original order is :");
+        for (int i = 0; i < items.size(); i++) {
+            System.out.print(items.get(i) + ",");
+            orOrder += items.get(i) + ",";
+        }
+        output.add(orOrder);
+
 //        double defaultDis = 0.0;
 //        for (int i = 2; i < distances.length - 1; i++) {
 //            defaultDis += distances[i][i + 1];
@@ -382,19 +391,27 @@ public class Warehouse {
 
             }
 
+            String opOrder = "Optimized order: ";
             System.out.println("\nOptimized order:");
             for (int i = 1; i < finalpath[0].size(); i++) {
                 int current = (finalpath[0].get(i) + 1) / 2;
                 System.out.print(items.get(current - 1) + ",");
+                opOrder += items.get(current - 1) + ",";
             }
+            output.add(opOrder);
 
+            String opPath = "Optimized Path: ";
             System.out.println("\nOptimized Path:");
             System.out.print("(" + locations.get(0)[0] + "," + locations.get(0)[1] + ")-->");
+            opPath += "(" + locations.get(0)[0] + "," + locations.get(0)[1] + ")-->";
             for (int i = 1; i < finalpath[0].size(); i++) {
                 int current = finalpath[0].get(i);
                 System.out.print("(" + locations.get(current + 1)[0] + "," + locations.get(current + 1)[1] + ")-->");
+                opPath += "(" + locations.get(current + 1)[0] + "," + locations.get(current + 1)[1] + ")-->";
             }
             System.out.println("(" + locations.get(1)[0] + "," + locations.get(1)[1] + ")");
+            opPath += "(" + locations.get(1)[0] + "," + locations.get(1)[1] + ")";
+            output.add(opPath);
 
             for (int i = 1; i < finalpath[0].size() - 1; i++) {
                 int current = finalpath[0].get(i);
@@ -404,6 +421,7 @@ public class Warehouse {
             this.drawPath(cells, locations.get(0), locations.get(finalpath[0].get(1) + 1));
             this.drawPath(cells, locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1), locations.get(1));
 
+            String opDis = "Optimized Distance: ";
             System.out.println("\nOptimized Distance:");
             double dis = 0;
             for (int i = 1; i < finalpath[0].size() - 1; i++) {
@@ -416,6 +434,30 @@ public class Warehouse {
             dis += distances[0][finalpath[0].get(1) + 1];
             dis += distances[finalpath[0].get(finalpath[0].size() - 1) + 1][1];
             System.out.println(dis);
+            opDis += dis;
+            output.add(opDis);
+
+            for (int i = 1; i < finalpath[0].size() - 1; i++) {
+                int current = finalpath[0].get(i);
+                int next = finalpath[0].get(i + 1);
+//                this.drawPath(cells, locations.get(current + 1), locations.get(next + 1));
+
+                output.add(locations.get(current + 1)[0] + "," + locations.get(current + 1)[1]);
+                output.add(locations.get(next + 1)[0] + "," + locations.get(next + 1)[1]);
+            }
+//            this.drawPath(cells, locations.get(0), locations.get(finalpath[0].get(1) + 1));
+//            this.drawPath(cells, locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1), locations.get(1));
+            output.add(locations.get(0) + "," + locations.get(0)[1]);
+            output.add(locations.get(finalpath[0].get(1) + 1)[0] + "," + locations.get(finalpath[0].get(1) + 1)[1]);
+            output.add(locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1)[0] + "," + locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1)[1]);
+            output.add(locations.get(1)[0] + "," + locations.get(1)[1]);
+
+            output.add("---");
+            try {
+                Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             return dis;
 
@@ -506,6 +548,8 @@ public class Warehouse {
             end.num = 1;
             order.add(end);
 
+
+            String opOrder = "Optimized order: ";
             System.out.println("\nOptimized order:");
             for (int i = 0; i < order.size(); i++) {
                 Tree.Node current = order.get(i);
@@ -513,16 +557,21 @@ public class Warehouse {
                     continue;
                 }
                 System.out.print(items.get((current.num / 2) - 1) + ",");
+                opOrder += items.get((current.num / 2) - 1) + ",";
             }
             System.out.println();
+            output.add(opOrder);
 
-
+            String opPath = "Optimized path: ";
             System.out.println("\nOptimized path:");
             for (int i = 0; i < order.size() - 1; i++) {
                 Tree.Node current = order.get(i);
                 System.out.print("(" + locations.get(current.num)[0] + "," + locations.get(current.num)[1] + ")-->");
+                opPath += "(" + locations.get(current.num)[0] + "," + locations.get(current.num)[1] + ")-->";
             }
             System.out.println("(" + locations.get(order.get(order.size() - 1).num)[0] + "," + locations.get(order.get(order.size() - 1).num)[1] + ")");
+            opPath += "(" + locations.get(order.get(order.size() - 1).num)[0] + "," + locations.get(order.get(order.size() - 1).num)[1] + ")";
+            output.add(opPath);
 
             for (int i = 0; i < order.size() - 1; i++) {
                 int current = order.get(i).num;
@@ -531,6 +580,7 @@ public class Warehouse {
                 this.drawPath(cells, locations.get(current), locations.get(next));
             }
 
+            String opDis = "Optimized Distance: ";
             double dis = 0;
             for (int i = 0; i < order.size() - 1; i++) {
                 Tree.Node current = order.get(i);
@@ -538,6 +588,25 @@ public class Warehouse {
                 dis += distances[current.num][next.num];
             }
             System.out.println("\nDistance: " + dis);
+            opDis += dis;
+            output.add(opDis);
+
+            for (int i = 0; i < order.size() - 1; i++) {
+                int current = order.get(i).num;
+                int next = order.get(i + 1).num;
+
+//                this.drawPath(cells, locations.get(current), locations.get(next));
+                output.add(locations.get(current)[0] + "," + locations.get(current)[1]);
+                output.add(locations.get(next)[0] + "," + locations.get(next)[1]);
+            }
+
+            output.add("---");
+
+            try {
+                Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             double currentWeight = 0;
             double currentEffort = 0;
@@ -554,6 +623,7 @@ public class Warehouse {
                     }
                 }
             }
+
             System.out.print("Total Effort: " + currentEffort);
             if (missWeight) {
                 System.out.println(" (missing some weight. It's a lower bound.)");
@@ -759,6 +829,80 @@ public class Warehouse {
         }
 
         this.refreshGrid();
+    }
+
+    public ArrayList<ArrayList<Integer>> ordersReorganize(ArrayList<ArrayList<Integer>> orders, Map<Integer, Double> weightInfo, double weightBound) {
+        // -1 split
+        // null single order
+        // 1 combine
+
+        int orderNo = 1;
+        double[] orderWeight = new double[orders.size()];
+        ArrayList<ArrayList<Integer>> orderStatus = new ArrayList<>(orders.size());
+
+        for (ArrayList<Integer> order : orders) {
+            double totalWeight = 0;
+            for (int item : order) {
+                if (weightInfo.containsKey(item)) {
+                    totalWeight += weightInfo.get(item);
+                }
+            }
+            orderWeight[orderNo - 1] = totalWeight;
+            orderNo++;
+        }
+
+        for (int i = 0; i < orders.size(); i++) {
+            orderStatus.add(new ArrayList<>());
+        }
+
+        for (int i = 0; i < orders.size(); i++) {
+            if(orderStatus.get(i).size() == 0) {
+                if (orderWeight[i] > weightBound) {
+                    orderStatus.get(i).add(-1);
+                    int splitPoint = 0;
+                    double tempWeight = 0;
+                    for (int item : orders.get(i)) {
+                        if (weightInfo.containsKey(item)) {
+                            tempWeight += weightInfo.get(item);
+                        }
+                        splitPoint++;
+                        if (tempWeight > weightBound) {
+                            orderStatus.get(i).add(splitPoint - 1);
+                            tempWeight = weightInfo.get(item);
+                        }
+                    }
+                }
+
+                if (orderWeight[i] == weightBound) {
+                    orderStatus.set(i, null);
+                }
+
+                if (orderWeight[i] < weightBound) {
+                    boolean combine = false;
+
+                    double tempWeight = orderWeight[i];
+                    for (int j = i + 1; j < orders.size(); j++) {
+                        if (tempWeight + orderWeight[j] < weightBound) {
+                            if (combine == false) {
+                                orderStatus.get(i).add(1);
+                                orderStatus.get(i).add(i);
+                                combine = true;
+                            }
+                            tempWeight += orderWeight[j];
+                            orderStatus.get(i).add(j);
+                        }
+                    }
+                    if (combine == true) {
+                        for (int x = 2; x < orderStatus.get(i).size(); x++) {
+                            orderStatus.set(orderStatus.get(i).get(x), orderStatus.get(i));
+                        }
+                    } else {
+                        orderStatus.set(i, null);
+                    }
+                }
+            }
+        }
+        return orderStatus;
     }
 }
 
