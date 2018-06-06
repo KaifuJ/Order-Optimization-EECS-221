@@ -149,13 +149,10 @@ public class Warehouse {
 
         ArrayList<String> output = new ArrayList<>();
 
-        String orOrder = "Original order: ";
         System.out.println("The original order is :");
         for (int i = 0; i < items.size(); i++) {
             System.out.print(items.get(i) + ",");
-            orOrder += items.get(i) + ",";
         }
-        output.add(orOrder);
 
 //        double defaultDis = 0.0;
 //        for (int i = 2; i < distances.length - 1; i++) {
@@ -413,13 +410,13 @@ public class Warehouse {
             opPath += "(" + locations.get(1)[0] + "," + locations.get(1)[1] + ")";
             output.add(opPath);
 
-            for (int i = 1; i < finalpath[0].size() - 1; i++) {
-                int current = finalpath[0].get(i);
-                int next = finalpath[0].get(i + 1);
-                this.drawPath(cells, locations.get(current + 1), locations.get(next + 1));
-            }
-            this.drawPath(cells, locations.get(0), locations.get(finalpath[0].get(1) + 1));
-            this.drawPath(cells, locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1), locations.get(1));
+//            for (int i = 1; i < finalpath[0].size() - 1; i++) {
+//                int current = finalpath[0].get(i);
+//                int next = finalpath[0].get(i + 1);
+//                this.drawPath(cells, locations.get(current + 1), locations.get(next + 1));
+//            }
+//            this.drawPath(cells, locations.get(0), locations.get(finalpath[0].get(1) + 1));
+//            this.drawPath(cells, locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1), locations.get(1));
 
             String opDis = "Optimized Distance: ";
             System.out.println("\nOptimized Distance:");
@@ -447,7 +444,7 @@ public class Warehouse {
             }
 //            this.drawPath(cells, locations.get(0), locations.get(finalpath[0].get(1) + 1));
 //            this.drawPath(cells, locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1), locations.get(1));
-            output.add(locations.get(0) + "," + locations.get(0)[1]);
+            output.add(locations.get(0)[0] + "," + locations.get(0)[1]);
             output.add(locations.get(finalpath[0].get(1) + 1)[0] + "," + locations.get(finalpath[0].get(1) + 1)[1]);
             output.add(locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1)[0] + "," + locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1)[1]);
             output.add(locations.get(1)[0] + "," + locations.get(1)[1]);
@@ -573,12 +570,12 @@ public class Warehouse {
             opPath += "(" + locations.get(order.get(order.size() - 1).num)[0] + "," + locations.get(order.get(order.size() - 1).num)[1] + ")";
             output.add(opPath);
 
-            for (int i = 0; i < order.size() - 1; i++) {
-                int current = order.get(i).num;
-                int next = order.get(i + 1).num;
-
-                this.drawPath(cells, locations.get(current), locations.get(next));
-            }
+//            for (int i = 0; i < order.size() - 1; i++) {
+//                int current = order.get(i).num;
+//                int next = order.get(i + 1).num;
+//
+//                this.drawPath(cells, locations.get(current), locations.get(next));
+//            }
 
             String opDis = "Optimized Distance: ";
             double dis = 0;
@@ -859,8 +856,10 @@ public class Warehouse {
             if(orderStatus.get(i).size() == 0) {
                 if (orderWeight[i] > weightBound) {
                     orderStatus.get(i).add(-1);
+
                     int splitPoint = 0;
                     double tempWeight = 0;
+
                     for (int item : orders.get(i)) {
                         if (weightInfo.containsKey(item)) {
                             tempWeight += weightInfo.get(item);
@@ -879,16 +878,20 @@ public class Warehouse {
 
                 if (orderWeight[i] < weightBound) {
                     boolean combine = false;
+                    int orderSizeBound = 50;
 
                     double tempWeight = orderWeight[i];
+                    int orderSize = orders.get(i).size();
+
                     for (int j = i + 1; j < orders.size(); j++) {
-                        if (tempWeight + orderWeight[j] < weightBound) {
+                        if (tempWeight + orderWeight[j] < weightBound && orderSize + orders.get(j).size() < orderSizeBound) {
                             if (combine == false) {
                                 orderStatus.get(i).add(1);
                                 orderStatus.get(i).add(i);
                                 combine = true;
                             }
                             tempWeight += orderWeight[j];
+                            orderSize += orders.get(j).size();
                             orderStatus.get(i).add(j);
                         }
                     }

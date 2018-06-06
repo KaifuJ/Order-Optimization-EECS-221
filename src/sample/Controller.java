@@ -15,12 +15,13 @@ import warehouse.Warehouse;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class Controller implements Initializable {
     @FXML
@@ -270,7 +271,24 @@ public class Controller implements Initializable {
         this.end[1] = Integer.parseInt(endX.getText());
         this.end[0] = Integer.parseInt(endY.getText());
 
-        ArrayList<ArrayList<Integer>> orderStatus = wh.ordersReorganize(orders, this.weightInfo, weightBound);
+        ArrayList<ArrayList<Integer>> filteredOrders = new ArrayList<>(orders.size());
+
+        for (int i = 0; i < orders.size(); i++) {
+            ArrayList<Integer> filteredOrder = new ArrayList<>(orders.get(i));
+            filteredOrders.add(filteredOrder);
+        }
+
+        for (int i = 0; i < filteredOrders.size(); i++) {
+            ArrayList<Integer> forder = filteredOrders.get(i);
+            for (int j = 0; j < forder.size(); j++) {
+                if (weightInfo.containsKey(forder.get(j)) && weightInfo.get(forder.get(j)) > weightBound) {
+                    forder.remove(j);
+                    j--;
+                }
+            }
+        }
+
+        ArrayList<ArrayList<Integer>> orderStatus = wh.ordersReorganize(filteredOrders, this.weightInfo, weightBound);
 
         File f = new File("batch.txt");
         try {
@@ -280,9 +298,25 @@ public class Controller implements Initializable {
         }
         Path file = Paths.get("batch.txt");
 
-        for (int i = 0; i < orders.size(); i++) {
+        for (int i = 0; i < filteredOrders.size(); i++) {
+
+            ArrayList<String> output = new ArrayList<>();
+            String orgOrder = "Original order: ";
+            for (int item : orders.get(i)) {
+                orgOrder += Integer.toString(item) + ",";
+            }
+            output.add(orgOrder);
+
             if (orderStatus.get(i) == null) { // singal order
-                ArrayList<Integer> order = orders.get(i);
+                output.add("Singal order");
+
+                try {
+                    Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ArrayList<Integer> order = filteredOrders.get(i);
 
                 ArrayList<int[]> location = new ArrayList<>();
                 location.add(start);
@@ -314,8 +348,18 @@ public class Controller implements Initializable {
                 }
 
                 wh.orderShortestPath(distances, order, location, this.weightInfo, this.cells, file);
+
             } else if (orderStatus.get(i).get(0) == -1) { // split
-                ArrayList<Integer> order = orders.get(i);
+
+                output.add("Split into " + orderStatus.get(i).size() + " subOrders");
+
+                try {
+                    Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ArrayList<Integer> order = filteredOrders.get(i);
                 ArrayList<ArrayList<Integer>> subOrders = new ArrayList<>(orderStatus.get(i).size() - 1 + 1);
                 // (size - 1) splitPoints, (size) subOrders
 
@@ -327,9 +371,108 @@ public class Controller implements Initializable {
                     }
                     subOrders.add(subOrder);
                 } // still lack one subOrder: the subOrder after the last splitPoint
+
+                ArrayList<Integer> lastSubOrder = new ArrayList<>();
+                for(int j = orderStatus.get(i).get(orderStatus.get(i).size() - 1); j < order.size(); j++){
+                    lastSubOrder.add(order.get(j));
+                }
+                subOrders.add(lastSubOrder);
+
+                for (ArrayList<Integer> subOrder : subOrders) {
+
+                    ArrayList<int[]> location = new ArrayList<>();
+                    location.add(start);
+                    location.add(end);
+
+                    for (int ii = 0; ii < subOrder.size(); ii++) {
+                        for (int j = 0; j < 30000; j++) {
+                            if ((int) allInfo[j][0] == subOrder.get(ii)) {
+                                int x = 2 * (int) allInfo[j][1];
+                                int y = 2 * (int) allInfo[j][2];
+
+                                int[] left = {x - 1, y};
+                                int[] right = {x + 1, y};
+                                location.add(left);
+                                location.add(right);
+                            }
+                        }
+                    }
+
+                    double[][] distances = new double[location.size()][location.size()];
+                    for (int ii = 0; ii < location.size(); ii++) {
+                        for (int j = 0; j < location.size(); j++) {
+                            if (ii == j) {
+                                distances[ii][j] = 0;
+                            } else {
+                                distances[ii][j] = wh.shortestPath(location.get(ii), location.get(j));
+                            }
+                        }
+                    }
+
+                    wh.orderShortestPath(distances, subOrder, location, this.weightInfo, this.cells, file);
+                }
+            } else if (orderStatus.get(i).get(0) == 1) {
+
+                String cmbOrders = "Combined with order ";
+
+                for (int j = 1; j < orderStatus.get(i).size(); j++) {
+                    cmbOrders += orderStatus.get(i).get(j) + ",";
+                }
+                output.add(cmbOrders);
+
+                try {
+                    Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ArrayList<Integer> combinedOrder = new ArrayList<>();
+                for (int j = 1; j < orderStatus.get(i).size(); j++) {
+                    combinedOrder.addAll(filteredOrders.get(orderStatus.get(i).get(j)));
+                }
+
+                ArrayList<int[]> location = new ArrayList<>();
+                location.add(start);
+                location.add(end);
+
+
+                for (int ii = 0; ii < combinedOrder.size(); ii++) {
+                    for (int j = 0; j < 30000; j++) {
+                        if ((int) allInfo[j][0] == combinedOrder.get(ii)) {
+                            int x = 2 * (int) allInfo[j][1];
+                            int y = 2 * (int) allInfo[j][2];
+
+                            int[] left = {x - 1, y};
+                            int[] right = {x + 1, y};
+                            location.add(left);
+                            location.add(right);
+                        }
+                    }
+                }
+
+                double[][] distances = new double[location.size()][location.size()];
+                for (int ii = 0; ii < location.size(); ii++) {
+                    for (int j = 0; j < location.size(); j++) {
+                        if (ii == j) {
+                            distances[ii][j] = 0;
+                        } else {
+                            distances[ii][j] = wh.shortestPath(location.get(ii), location.get(j));
+                        }
+                    }
+                }
+
+                wh.orderShortestPath(distances, combinedOrder, location, this.weightInfo, this.cells, file);
             }
 
+            output.clear();
+            output.add("*****");
+            try {
+                Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
 
     }
 
@@ -343,6 +486,19 @@ public class Controller implements Initializable {
                 }
             }
         }
+    }
+
+    public void readBatchFile(Path file){
+        Stream<String> stream = null;
+        try {
+            stream = Files.lines(file);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        Iterator<String> iterator = stream.iterator();
+
     }
 
 }

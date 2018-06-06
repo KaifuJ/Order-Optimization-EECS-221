@@ -13,7 +13,7 @@
          <children>
             <HBox spacing="20.0" BorderPane.alignment="CENTER">
                <children>
-                  <TextField fx:id="text" prefHeight="25.0" prefWidth="695.0" promptText="Enter file name or order (sepreate items with ',')" text="warehouse-orders-v01.csv" />
+                  <TextField fx:id="text" prefHeight="25.0" prefWidth="695.0" promptText="Enter file name or order (sepreate items with ',')" text="/home/kaifuj/Classes/eecs221/project/src/test" />
                   <RadioButton fx:id="manInput" mnemonicParsing="false" text="Manually Input">
                      <padding>
                         <Insets top="3.0" />
@@ -64,7 +64,7 @@
                         <Insets left="20.0" top="6.0" />
                      </padding>
                   </Label>
-                  <TextField fx:id="weightBound" prefHeight="25.0" prefWidth="65.0" text="20" />
+                  <TextField fx:id="weightBound" prefHeight="25.0" prefWidth="65.0" text="500" />
                </children>
                <padding>
                   <Insets left="5.0" right="5.0" />
@@ -76,10 +76,11 @@
    <bottom>
       <VBox BorderPane.alignment="CENTER">
          <children>
-            <Label text="Original Order: " />
-            <Label alignment="TOP_LEFT" text="Optimized order: " />
-            <Label alignment="TOP_LEFT" text="Optimized Path: " />
-            <Label alignment="TOP_LEFT" text="Optimized Distance: " />
+            <Label fx:id="orgOrder" text="Original Order: " />
+            <Label fx:id="status" text="Status" />
+            <Label fx:id="opOrder" alignment="TOP_LEFT" text="Optimized order: " />
+            <Label fx:id="opPath" alignment="TOP_LEFT" text="Optimized Path: " />
+            <Label fx:id="opDis" alignment="TOP_LEFT" text="Optimized Distance: " />
          </children>
       </VBox>
    </bottom>
