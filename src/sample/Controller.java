@@ -11,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.control.TreeItem;
 import warehouse.Warehouse;
 
 import java.io.*;
@@ -56,6 +57,16 @@ public class Controller implements Initializable {
     private TextField weightBound;
     @FXML
     private TreeView tree;
+    @FXML
+    private Label orgOrder;
+    @FXML
+    private Label status;
+    @FXML
+    private Label opOrder;
+    @FXML
+    private Label opPath;
+    @FXML
+    private Label opDis;
 
     private double[][] allInfo;
     private Map<Integer, Double> weightInfo;
@@ -105,7 +116,7 @@ public class Controller implements Initializable {
                 if ((j - 1) % 2 == 0 && (20 - i) % 2 == 0) {
                     cells[i][j].setFill(Color.RED);
                 } else {
-                    cells[i][j].setFill(Color.BLUE);
+                    cells[i][j].setFill(Color.LIGHTGRAY);
                 }
                 grid.getChildren().add(cells[i][j]);
             }
@@ -473,7 +484,7 @@ public class Controller implements Initializable {
             }
         }
 
-
+        this.readBatchFile();
     }
 
     private void refreshColor(){
@@ -482,13 +493,15 @@ public class Controller implements Initializable {
                 if ((j - 1) % 2 == 0 && (20 - i) % 2 == 0) {
                     cells[i][j].setFill(Color.RED);
                 } else {
-                    cells[i][j].setFill(Color.BLUE);
+                    cells[i][j].setFill(Color.LIGHTGRAY);
                 }
             }
         }
     }
 
-    public void readBatchFile(Path file){
+    public void readBatchFile(){
+        Path file = Paths.get("batch.txt");
+
         Stream<String> stream = null;
         try {
             stream = Files.lines(file);
@@ -499,6 +512,168 @@ public class Controller implements Initializable {
 
         Iterator<String> iterator = stream.iterator();
 
+        int[] splitNum = new int[3000];
+        int orderNum = 0;
+        int lineNum = 1;
+
+        while (iterator.hasNext()) {
+            String line = iterator.next();
+            if (lineNum == 2) {
+                if (line.contains("Split")) {
+                    splitNum[orderNum] = Integer.parseInt(line.split(" ")[2]);
+                }
+            }
+            if (line.equals("*****")) {
+                lineNum = 0;
+                orderNum++;
+            }
+            lineNum++;
+        }
+
+        TreeItem<String> root = new TreeItem<>();
+        root.setExpanded(true);
+
+        for (int i = 0; i < orderNum; i++) {
+            if (splitNum[i] == 0) {
+                TreeItem<String> r = makeBranch("order " + Integer.toString(i + 1), root);
+            } else {
+                TreeItem<String> r = makeBranch("order " + Integer.toString(i + 1), root);
+                r.setExpanded(true);
+
+                for (int j = 0; j < splitNum[i]; j++) {
+                    makeBranch("subOrder " + Integer.toString(j + 1), r);
+                }
+            }
+        }
+
+        this.tree.getSelectionModel().selectedItemProperty()
+                .addListener((v, oldValue, newValue) -> {
+                    this.refreshColor();
+
+                    TreeItem<String> item = (TreeItem<String>) newValue;
+
+                    Stream<String> stream0 = null;
+                    try {
+                        stream0 = Files.lines(file);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return;
+                    }
+
+                    Iterator<String> iterator0 = stream0.iterator();
+
+                    if (item.getParent().getValue() == null) {
+                        int odNum = Integer.parseInt(item.getValue().split(" ")[1]) - 1;
+
+                        int cOdNum = 0;
+                        String line = null;
+
+                        while (cOdNum != odNum) {
+                            line = iterator0.next();
+                            if (line.equals("*****")) {
+                                cOdNum++;
+                            }
+                        }
+                        this.orgOrder.setText(iterator0.next());
+                        this.status.setText(iterator0.next());
+                        this.opOrder.setText(iterator0.next());
+                        this.opPath.setText(iterator0.next());
+                        this.opDis.setText(iterator0.next());
+
+                        String[] s1 = iterator0.next().split(",");
+                        String[] s2 = iterator0.next().split(",");
+
+                        while (s1.length == 2) {
+                            int[] var1 = new int[2];
+                            int[] var2 = new int[2];
+                            var1[0] = Integer.parseInt(s1[0]);
+                            var1[1] = Integer.parseInt(s1[1]);
+                            var2[0] = Integer.parseInt(s2[0]);
+                            var2[1] = Integer.parseInt(s2[1]);
+
+                            this.wh.drawPath(this.cells, var1, var2);
+
+                            s1 = iterator0.next().split(",");
+                            s2 = iterator0.next().split(",");
+                        }
+                    } else {
+                        int odNum = Integer.parseInt(item.getParent().getValue().split(" ")[1]) - 1;
+                        int subodNum = Integer.parseInt(item.getValue().split(" ")[1]) - 1;
+
+                        int cOdNum = 0;
+                        String line = null;
+
+                        while (cOdNum != odNum) {
+                            line = iterator0.next();
+                            if (line.equals("*****")) {
+                                cOdNum++;
+                            }
+                        }
+                        this.orgOrder.setText(iterator0.next());
+                        this.status.setText(iterator0.next());
+
+                        int cSubodNum = 0;
+
+                        while (cSubodNum != subodNum) {
+                            line = iterator0.next();
+                            if (line.equals("---")) {
+                                cSubodNum++;
+                            }
+                        }
+                        this.opOrder.setText(iterator0.next());
+                        this.opPath.setText(iterator0.next());
+                        this.opDis.setText(iterator0.next());
+
+                        String[] s1 = iterator0.next().split(",");
+                        String[] s2 = iterator0.next().split(",");
+
+                        while (s1.length == 2) {
+                            int[] var1 = new int[2];
+                            int[] var2 = new int[2];
+                            var1[0] = Integer.parseInt(s1[0]);
+                            var1[1] = Integer.parseInt(s1[1]);
+                            var2[0] = Integer.parseInt(s2[0]);
+                            var2[1] = Integer.parseInt(s2[1]);
+
+                            this.wh.drawPath(this.cells, var1, var2);
+
+                            s1 = iterator0.next().split(",");
+                            s2 = iterator0.next().split(",");
+                        }
+                    }
+                });
+
+        this.tree.setRoot(root);
+        this.tree.setShowRoot(false);
+    }
+
+    private TreeItem<String> makeBranch(String title, TreeItem<String> parent) {
+        TreeItem<String> item = new TreeItem<>(title);
+        item.setExpanded(true);
+        parent.getChildren().add(item);
+        return item;
+    }
+
+    private void orderSelected(){
+
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
