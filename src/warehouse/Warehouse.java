@@ -2,6 +2,7 @@ package warehouse;
 
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import sample.Controller;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -141,7 +142,7 @@ public class Warehouse {
         }
     }
 
-    public double orderShortestPath(double[][] distances, ArrayList<Integer> items, ArrayList<int[]> locations, Map<Integer, Double> weightInfo, Rectangle[][] cells, Path file) {
+    public double orderShortestPath(double[][] distances, ArrayList<Integer> items, ArrayList<int[]> locations, Map<Integer, Double> weightInfo, Rectangle[][] cells, Path file, boolean isByFile, Controller controller) {
         // 0 - start point, 1 - end point
         // distances: [start, end, item1-l, item1-r, item2-l, item2-r ...] * [start, end, item1-l, item1-r, item2-l, item2-r ...]
         // items: item1, item2, item3 ...
@@ -163,7 +164,7 @@ public class Warehouse {
 //        System.out.println("\nThe distance of original order is " + defaultDis);
 
 
-        if (items.size() <= 10) {
+        if (items.size() < 8) {
 //            System.out.println("\nThe following path is the optimal shortest solution.");
 //
 //            int numExS = distances.length - 1;
@@ -410,13 +411,15 @@ public class Warehouse {
             opPath += "(" + locations.get(1)[0] + "," + locations.get(1)[1] + ")";
             output.add(opPath);
 
-//            for (int i = 1; i < finalpath[0].size() - 1; i++) {
-//                int current = finalpath[0].get(i);
-//                int next = finalpath[0].get(i + 1);
-//                this.drawPath(cells, locations.get(current + 1), locations.get(next + 1));
-//            }
-//            this.drawPath(cells, locations.get(0), locations.get(finalpath[0].get(1) + 1));
-//            this.drawPath(cells, locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1), locations.get(1));
+            if(!isByFile) {
+                for (int i = 1; i < finalpath[0].size() - 1; i++) {
+                    int current = finalpath[0].get(i);
+                    int next = finalpath[0].get(i + 1);
+                    this.drawPath(cells, locations.get(current + 1), locations.get(next + 1));
+                }
+                this.drawPath(cells, locations.get(0), locations.get(finalpath[0].get(1) + 1));
+                this.drawPath(cells, locations.get(finalpath[0].get(finalpath[0].size() - 1) + 1), locations.get(1));
+            }
 
             String opDis = "Optimized Distance: ";
             System.out.println("\nOptimized Distance:");
@@ -450,10 +453,16 @@ public class Warehouse {
             output.add(locations.get(1)[0] + "," + locations.get(1)[1]);
 
             output.add("---");
-            try {
-                Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (isByFile) {
+                try {
+                    Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                controller.opOrder.setText(opOrder);
+                controller.opPath.setText(opPath);
+                controller.opDis.setText(opDis);
             }
 
             return dis;
@@ -570,12 +579,14 @@ public class Warehouse {
             opPath += "(" + locations.get(order.get(order.size() - 1).num)[0] + "," + locations.get(order.get(order.size() - 1).num)[1] + ")";
             output.add(opPath);
 
-//            for (int i = 0; i < order.size() - 1; i++) {
-//                int current = order.get(i).num;
-//                int next = order.get(i + 1).num;
-//
-//                this.drawPath(cells, locations.get(current), locations.get(next));
-//            }
+            if(!isByFile) {
+                for (int i = 0; i < order.size() - 1; i++) {
+                    int current = order.get(i).num;
+                    int next = order.get(i + 1).num;
+
+                    this.drawPath(cells, locations.get(current), locations.get(next));
+                }
+            }
 
             String opDis = "Optimized Distance: ";
             double dis = 0;
@@ -599,11 +610,18 @@ public class Warehouse {
 
             output.add("---");
 
-            try {
-                Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (isByFile) {
+                try {
+                    Files.write(file, output, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                controller.opOrder.setText(opOrder);
+                controller.opPath.setText(opPath);
+                controller.opDis.setText(opDis);
             }
+
 
             double currentWeight = 0;
             double currentEffort = 0;
@@ -884,7 +902,7 @@ public class Warehouse {
                     int orderSize = orders.get(i).size();
 
                     for (int j = i + 1; j < orders.size(); j++) {
-                        if (tempWeight + orderWeight[j] < weightBound && orderSize + orders.get(j).size() < orderSizeBound) {
+                        if (tempWeight + orderWeight[j] < weightBound && orderSize + orders.get(j).size() < orderSizeBound && orderStatus.get(j).size() == 0) {
                             if (combine == false) {
                                 orderStatus.get(i).add(1);
                                 orderStatus.get(i).add(i);

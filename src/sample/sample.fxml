@@ -40,25 +40,25 @@
                         <Insets left="20.0" top="6.0" />
                      </padding>
                   </Label>
-                  <TextField fx:id="startY" prefWidth="42.0" text="1" />
+                  <TextField fx:id="startY" prefWidth="42.0" text="-1" />
                   <Label text="Start: y =">
                      <padding>
                         <Insets left="20.0" top="5.0" />
                      </padding>
                   </Label>
-                  <TextField fx:id="startX" prefHeight="25.0" prefWidth="42.0" text="1" />
+                  <TextField fx:id="startX" prefHeight="25.0" prefWidth="42.0" text="0" />
                   <Label text="End: x =">
                      <padding>
                         <Insets left="20.0" top="6.0" />
                      </padding>
                   </Label>
-                  <TextField fx:id="endY" prefWidth="42.0" text="5" />
+                  <TextField fx:id="endY" prefWidth="42.0" text="37" />
                   <Label text="End: y =">
                      <padding>
                         <Insets left="20.0" top="6.0" />
                      </padding>
                   </Label>
-                  <TextField fx:id="endX" prefWidth="42.0" text="5" />
+                  <TextField fx:id="endX" prefWidth="42.0" text="20" />
                   <Label text="Weight Bound: ">
                      <padding>
                         <Insets left="20.0" top="6.0" />

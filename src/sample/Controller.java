@@ -58,15 +58,15 @@ public class Controller implements Initializable {
     @FXML
     private TreeView tree;
     @FXML
-    private Label orgOrder;
+    public Label orgOrder;
     @FXML
-    private Label status;
+    public Label status;
     @FXML
-    private Label opOrder;
+    public Label opOrder;
     @FXML
-    private Label opPath;
+    public Label opPath;
     @FXML
-    private Label opDis;
+    public Label opDis;
 
     private double[][] allInfo;
     private Map<Integer, Double> weightInfo;
@@ -241,15 +241,14 @@ public class Controller implements Initializable {
             }
         }
 
-        File f = new File("test.txt");
-        try {
-            f.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        wh.orderShortestPath(distances, items, location, weightInfo, this.cells, null, false, this);
 
-        Path file = Paths.get("test.txt");
-        wh.orderShortestPath(distances, items, location, weightInfo, this.cells, file);
+        String orgOrder = "Original Order: ";
+        for (int item : items) {
+            orgOrder += Integer.toString(item) + ",";
+        }
+        this.orgOrder.setText(orgOrder);
+        this.status.setText("Singal order");
     }
 
     private void handleByFile(String filename, double weightBound) {
@@ -358,7 +357,7 @@ public class Controller implements Initializable {
                     }
                 }
 
-                wh.orderShortestPath(distances, order, location, this.weightInfo, this.cells, file);
+                wh.orderShortestPath(distances, order, location, this.weightInfo, this.cells, file, true, null);
 
             } else if (orderStatus.get(i).get(0) == -1) { // split
 
@@ -420,14 +419,14 @@ public class Controller implements Initializable {
                         }
                     }
 
-                    wh.orderShortestPath(distances, subOrder, location, this.weightInfo, this.cells, file);
+                    wh.orderShortestPath(distances, subOrder, location, this.weightInfo, this.cells, file, true, null);
                 }
             } else if (orderStatus.get(i).get(0) == 1) {
 
                 String cmbOrders = "Combined with order ";
 
                 for (int j = 1; j < orderStatus.get(i).size(); j++) {
-                    cmbOrders += orderStatus.get(i).get(j) + ",";
+                    cmbOrders += (orderStatus.get(i).get(j) + 1) + ",";
                 }
                 output.add(cmbOrders);
 
@@ -472,7 +471,7 @@ public class Controller implements Initializable {
                     }
                 }
 
-                wh.orderShortestPath(distances, combinedOrder, location, this.weightInfo, this.cells, file);
+                wh.orderShortestPath(distances, combinedOrder, location, this.weightInfo, this.cells, file, true, null);
             }
 
             output.clear();
