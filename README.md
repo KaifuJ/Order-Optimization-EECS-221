@@ -5,4 +5,4 @@
 4. Order batch process is supported.
 5. Implement GUI with JavaFX.
 
-### Because requirements were gradually added throughout the quarter, instead of being given at one time, the code is kind of messy and reconstruction is needed.
+#### Because requirements were gradually added throughout the quarter, instead of being given at one time, the code is kind of messy and reconstruction is needed.
